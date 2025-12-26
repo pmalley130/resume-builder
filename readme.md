@@ -1,0 +1,1 @@
+Use an LLM to parse bullet points from personal resumes, parse job descriptions, then create a resume from that data.
