@@ -87,4 +87,16 @@ def load_collection(path="data/resume_data.json"):
             ids=ids
     )
 
-load_collection()
+def parse_jd(jd_text: str) -> dict:
+    response = client.chat.completions.create( #send the job description (as json/dict) and extraction prompt to gpt
+            model="gpt-4.1-mini",
+            messages=[
+                 {"role": "system", "content": JD_EXTRACTION_PROMPT},
+                 {"role": "user", "content": jd_text}
+            ],
+            response_format={"type":"json_object"} #ensure gpt only sends back json, otherwise we get json decode errors
+    )
+
+    print(response.choices[0].message.content)
+    return json.loads(response.choices[0].message.content)
+
