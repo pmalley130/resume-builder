@@ -135,7 +135,6 @@ def retrieve_relevant_bullets(skills: List[str], k=10):
        query_texts=[query],
        n_results=k   
     )
-    print(results["documents"][0])
     return results["documents"][0]
 
 #make the resume
@@ -153,6 +152,18 @@ def generate_resume(job_requirements: dict, bullets: List[str]):
 
     return response.choices[0].message.content
 
+def critic_pass(generated_resume:str):
+    response = client.chat.completions.create(
+         model="gpt-4.1-mini",
+         messages = [
+            {"role": "system", "content": CRITIC_PROMPT},
+            {"role": "user", "content": generated_resume}
+         ],
+         response_format={"type":"json_object"}
+    )
+
+    return json.loads(response.choices[0].message.content)
+
 #main flow
 if __name__ == "__main__":
     #populate collection with bullets
@@ -163,12 +174,16 @@ if __name__ == "__main__":
     with open("data/job_description.txt") as f:
         jd_text = f.read()
     job_req = parse_jd(jd_text)
-    print(job_req)
+
     #get bullets from collection that matches skills from jd
     bullets = retrieve_relevant_bullets(job_req["required_skills"])
 
-    #generate resume
+    #generate resume and critique
     resume = generate_resume(job_req, bullets)
+    critique = critic_pass(resume)
 
     print("\n Generated Resume \n")
     print(resume)
+
+    print("\n Critic Report  \n")
+    print(json.dumps(critique,indent=2))
