@@ -180,3 +180,6 @@ data/job_description.txt
 
 # playground for method testing
 playground.py
+
+#chromadb
+chroma_db/
