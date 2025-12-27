@@ -3,7 +3,7 @@ from typing import List
 from openai import OpenAI
 import chromadb
 from chromadb.utils import embedding_functions
-from chromadb.config import Settings
+from chromadb import HttpClient
 
 import os
 from dotenv import load_dotenv
@@ -18,7 +18,6 @@ from prompts import ( #import prompts from separate file
 
 
 load_dotenv() #load API key
-assert os.getenv("OPENAI_API_KEY"), "OPENAI_API_KEY is not set"
 
 client = OpenAI() #start openAI client
 
@@ -28,7 +27,11 @@ embedding_fn = embedding_functions.OpenAIEmbeddingFunction(
     model_name="text-embedding-3-small"
 )
 
-chroma = chromadb.PersistentClient(path="./chroma_db")
+#get chromadb settings from env
+chroma_host = os.getenv("CHROMA_HOST")
+chroma_port_str = os.getenv("CHROMA_PORT")
+chroma_port = int(chroma_port_str)
+chroma = chromadb.HttpClient(host=chroma_host,port=chroma_port)
 
 collection = chroma.get_or_create_collection(
     name="resume_bullets",
