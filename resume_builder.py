@@ -8,8 +8,6 @@ from chromadb import HttpClient
 import os
 from dotenv import load_dotenv
 
-from collections import defaultdict
-
 import traceback
 
 from prompts import ( #import prompts from separate file

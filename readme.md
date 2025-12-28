@@ -4,4 +4,5 @@ Current status: Successfully creates new bullet points aligning with job descrip
 To-do:
 * additional prompt to extract one-word skills
 * port candidate information (name, education)
+* save experience json for review and re-use
 * pdf rendering
