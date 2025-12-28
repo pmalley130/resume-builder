@@ -8,6 +8,8 @@ from chromadb import HttpClient
 import os
 from dotenv import load_dotenv
 
+from collections import defaultdict
+
 import traceback
 
 from prompts import ( #import prompts from separate file
@@ -35,11 +37,6 @@ chroma = chromadb.HttpClient(host=chroma_host,port=chroma_port)
 
 collection = chroma.get_or_create_collection(
     name="resume_bullets",
-    embedding_function=embedding_fn
-)
-
-collection = chroma.get_or_create_collection(
-    name="fresh_resume_test", 
     embedding_function=embedding_fn
 )
 
@@ -138,7 +135,7 @@ def retrieve_relevant_bullets(skills: List[str], k=10):
     return results["documents"][0]
 
 #make the resume
-def generate_resume(job_requirements: dict, bullets: List[str]):
+def generate_bullets(job_requirements: dict, bullets: List[str]):
     #complete prompt using json job reqs and resume bullets from collection
     prompt = RESUME_GENERATION_PROMPT.format( 
           job_requirements=json.dumps(job_requirements, indent=2),
@@ -147,11 +144,62 @@ def generate_resume(job_requirements: dict, bullets: List[str]):
 
     response = client.chat.completions.create(
           model="gpt-4.1",
-          messages=[{"role":"user", "content": prompt}]
+          messages=[{"role":"user", "content": prompt}],
+          response_format={"type":"json_object"}
     )
 
-    return response.choices[0].message.content
+    return json.loads(response.choices[0].message.content)
 
+#align the new bullets to the job roles for for final resume
+def match_bullets_to_roles(aligned_bullets, threshold=0.85):
+    matched = []
+
+    for text in aligned_bullets["rewritten_bullets"]: #grab the original bullet that best aligns with new one
+        print(text)
+        result = collection.query(
+            query_texts=[text],
+            n_results=1
+        )
+
+        #grab similarity score and info from original match
+        score = result["distances"][0][0]
+        original_id = result["ids"][0][0]
+        metadata = result["metadatas"][0][0]
+
+        print(f"Original ID = {original_id}")
+
+        #add the metadata back to the bullets
+        matched.append({
+            "rewritten_text": text,
+            "original_bullet_id": original_id,
+            "title": metadata["title"],
+            "company": metadata["company"],
+            "dates": metadata["dates"]
+        })
+
+    #sort bullets into roles
+    roles = {} #created roles
+
+    for entry in matched:
+        title = entry['title']
+
+        #create role and fields if it hasn't been seen yet
+        if title not in roles:
+            roles[title] = {
+                "company": entry['company'],
+                "title": title,
+                "dates": entry['dates'],
+                "experiences": []
+            }
+
+        roles[title]["experiences"].append(entry['rewritten_text'])
+        
+    
+    print(json.dumps(roles, indent=2))
+    return roles
+
+#check for missing keywords and skills
+"""
 def critic_pass(generated_resume:str):
     response = client.chat.completions.create(
          model="gpt-4.1-mini",
@@ -163,7 +211,7 @@ def critic_pass(generated_resume:str):
     )
 
     return json.loads(response.choices[0].message.content)
-
+"""
 #main flow
 if __name__ == "__main__":
     #populate collection with bullets
@@ -179,11 +227,14 @@ if __name__ == "__main__":
     bullets = retrieve_relevant_bullets(job_req["required_skills"])
 
     #generate resume and critique
-    resume = generate_resume(job_req, bullets)
-    critique = critic_pass(resume)
+    aligned_bullets = generate_bullets(job_req, bullets)
+    #critique = critic_pass(resume)
 
-    print("\n Generated Resume \n")
-    print(resume)
+    experience = match_bullets_to_roles(aligned_bullets)
+    #print(json.dumps(experience,indent=2))
+    #print("\n Aligned Bullets \n")
+    #print(aligned_bullets)
 
-    print("\n Critic Report  \n")
-    print(json.dumps(critique,indent=2))
+    #
+    #print("\n Critic Report  \n")
+    #print(json.dumps(critique,indent=2))

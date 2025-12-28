@@ -18,6 +18,8 @@ Rules:
 - Preserve metrics exactly
 - Optimize wording to match the job description language
 - Keep bullets concise and ATS-friendly
+- Order bullets by relevance to the job requirements
+- Return them in JSON format under the object name "rewritten_bullets"
 
 Job Requirements:
 {job_requirements}
