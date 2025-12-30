@@ -178,6 +178,7 @@ ruff.toml
 data/resume_data.json
 data/job_description.txt
 data/aligned_experiences.json
+data/new_resume.json
 
 # playground for method testing
 playground.py

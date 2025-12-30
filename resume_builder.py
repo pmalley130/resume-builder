@@ -26,6 +26,7 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
 #load collection
 def load_collection(collection, path="data/resume_data.json"):
 
+    #load candidate data from file
     with open(path,encoding='utf8') as f:
             data = json.load(f)
 
@@ -74,7 +75,7 @@ def load_collection(collection, path="data/resume_data.json"):
 
                     ids.append(bullet["id"])
 
- 
+    #add to collection
     try:
         collection.add(
             ids=ids,
@@ -84,8 +85,6 @@ def load_collection(collection, path="data/resume_data.json"):
     except Exception as e:
           print(f"Error occured: {e}")
           traceback.print_exc
-
-    print("collection loaded")
 
 #parse job description into json
 def parse_jd(jd_text: str) -> dict:
@@ -98,16 +97,17 @@ def parse_jd(jd_text: str) -> dict:
             response_format={"type":"json_object"} #ensure gpt only sends back json, otherwise we get json decode errors
     )
 
-    print(response.choices[0].message.content)
+    print("Job Description Parsed")
     return json.loads(response.choices[0].message.content)
 
 #grab my skills from the chroma collection
-def retrieve_relevant_bullets(skills: List[str], k=10):
+def retrieve_relevant_bullets(skills: List[str], k=20):
     query = " ".join(skills)
     results = collection.query(
        query_texts=[query],
        n_results=k   
     )
+    print("Relevant Bullets retrieved")
     return results["documents"][0]
 
 #make the resume
@@ -125,7 +125,7 @@ def generate_bullets_and_skills(job_requirements: dict, bullets: List[str]):
     )
 
     answer = json.loads(response.choices[0].message.content)
-    print(answer)
+    print("New Bullets and Skills Generated")
     return answer['rewritten_bullets'],answer['targeted_skills']
 
 #align the new bullets to the job roles for for final resume
@@ -268,6 +268,13 @@ if __name__ == "__main__":
     resume['experiences'] = experience
     resume['skills'] = skills
 
+    #save new resume to json
+    with open("data/new_resume.json", 'w') as f:
+        json.dump(resume, f, indent=4)
+
+    print("New Resume as JSON \n")
     print(json.dumps(resume,indent=3))
+
+
     
        
