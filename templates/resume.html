@@ -49,6 +49,27 @@
             border-radius: 6px;
             font-size: 0.9em;
         }
+        .certifications-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        .certifications-table td {
+            padding: 6px 0;
+            vertical-align: top;
+        }
+
+        .cert-org {
+            font-weight: 600;
+            text-align: left;
+            width: 35%;
+        }
+
+        .cert-list {
+            text-align: right;
+            width: 65%;
+        }
     </style>
 </head>
 <body>
@@ -92,6 +113,18 @@
     </li>
 {% endfor %}
 </ul>
+
+<h2>Certifications</h2>
+<table class="certifications-table">
+    {% for org in resume.certifications %}
+    <tr>
+        <td class="cert-org">{{ org.organization }}</td>
+        <td class="cert-list">
+            {{ org.certs | join(", ") }}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
 
 <h2>Skills</h2>
 <div class="skills">

@@ -186,7 +186,7 @@ def critic_pass(generated_resume:str):
 
     return json.loads(response.choices[0].message.content)
 """
-#load name, portfolio, and education
+#load name, portfolio, certs, and education
 def load_static_data(path="data/resume_data.json"):
     
     with open(path,encoding='utf8') as f:
@@ -197,6 +197,7 @@ def load_static_data(path="data/resume_data.json"):
     candidate['location'] = data['candidate']['base_location']
     candidate['education'] = data['candidate']['education']
     candidate['portfolio'] = data['candidate']['portfolio_links']
+    candidate['certifications'] = data['candidate']['certifications']
 
     return candidate
 
@@ -230,6 +231,7 @@ def load_experiences():
         save_data = {}
         save_data['experience'] = experience
         save_data['targeted_skills'] = skills
+
         #write to file for later
         with open("data/aligned_experiences.json", 'w') as f:
              json.dump(save_data, f, indent=4)
