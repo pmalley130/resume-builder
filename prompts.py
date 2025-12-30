@@ -27,7 +27,7 @@ Job Requirements:
 Source Bullets:
 {bullets}
 
-Generate tailored resume bullets.
+Generate tailored resume bullets and skills.
 """
 
 CRITIC_PROMPT = """

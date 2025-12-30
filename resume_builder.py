@@ -16,28 +16,6 @@ from prompts import ( #import prompts from separate file
     CRITIC_PROMPT
 )
 
-
-load_dotenv() #load API key
-
-client = OpenAI() #start openAI client
-
-#vector store setup
-embedding_fn = embedding_functions.OpenAIEmbeddingFunction(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    model_name="text-embedding-3-small"
-)
-
-#get chromadb settings from env
-chroma_host = os.getenv("CHROMA_HOST")
-chroma_port_str = os.getenv("CHROMA_PORT")
-chroma_port = int(chroma_port_str)
-chroma = chromadb.HttpClient(host=chroma_host,port=chroma_port)
-
-collection = chroma.get_or_create_collection(
-    name="resume_bullets",
-    embedding_function=embedding_fn
-)
-
 def embed_texts(texts: list[str]) -> list[list[float]]:
       response = client.embeddings.create(
             model="text-embedding-3-small",
@@ -210,29 +188,82 @@ def critic_pass(generated_resume:str):
 
     return json.loads(response.choices[0].message.content)
 """
+#load name, portfolio, and education
+def load_static_data(path="data/resume_data.json"):
+    
+    with open(path,encoding='utf8') as f:
+        data = json.load(f)
+
+    candidate = {}
+    candidate['name'] = data['candidate']['name']
+    candidate['location'] = data['candidate']['base_location']
+    candidate['education'] = data['candidate']['education']
+    candidate['portfolio'] = data['candidate']['portfolio_links']
+
+    return candidate
+
+def load_experiences():
+    #check to see if we've done this part
+    if os.path.exists("data/aligned_experiences.json"):
+        with open("data/aligned_experiences.json", 'r') as f:
+            experience = json.load(f)
+        print("Previous experiences loaded")
+        return experience
+    else:
+        #populate collection with bullets
+        print("Loading collection")
+        load_collection(collection)
+        print("collection loaded")
+        #open job description and parse into relevant json based on prompt
+        with open("data/job_description.txt") as f:
+            jd_text = f.read()
+        job_req = parse_jd(jd_text)
+
+        #get old bullets from collection that matches skills from jd
+        bullets = retrieve_relevant_bullets(job_req["required_skills"])
+
+        #generate bullets for new resume
+        aligned_bullets = generate_bullets(job_req, bullets)
+        
+        #create experience section for resume
+        experience = match_bullets_to_roles(aligned_bullets)
+
+        #write to file for later
+        with open("data/aligned_experiences.json", 'w') as f:
+             json.dump(experience, f, indent=4)
+
+        return experience
+    
 #main flow
 if __name__ == "__main__":
-    #populate collection with bullets
-    print("Loading collection")
-    load_collection(collection)
-    print("collection loaded")
-    #open job description and parse into relevant json based on prompt
-    with open("data/job_description.txt") as f:
-        jd_text = f.read()
-    job_req = parse_jd(jd_text)
+    load_dotenv() #load API key
 
-    #get bullets from collection that matches skills from jd
-    bullets = retrieve_relevant_bullets(job_req["required_skills"])
+    client = OpenAI() #start openAI client
 
-    #generate resume and critique
-    aligned_bullets = generate_bullets(job_req, bullets)
-    #critique = critic_pass(resume)
+    #vector store setup
+    embedding_fn = embedding_functions.OpenAIEmbeddingFunction(
+        api_key=os.getenv("OPENAI_API_KEY"),
+        model_name="text-embedding-3-small"
+    )
 
-    experience = match_bullets_to_roles(aligned_bullets)
-    #print(json.dumps(experience,indent=2))
-    #print("\n Aligned Bullets \n")
-    #print(aligned_bullets)
+    #get chromadb settings from env
+    chroma_host = os.getenv("CHROMA_HOST")
+    chroma_port_str = os.getenv("CHROMA_PORT")
+    chroma_port = int(chroma_port_str)
+    chroma = chromadb.HttpClient(host=chroma_host,port=chroma_port)
 
-    #
-    #print("\n Critic Report  \n")
-    #print(json.dumps(critique,indent=2))
+    collection = chroma.get_or_create_collection(
+        name="resume_bullets",
+        embedding_function=embedding_fn
+    )
+    resume = {}
+
+    #load things we don't need ai for (on every resume)
+    resume = load_static_data()
+
+    #add experiences to resume
+    resume['experience'] = load_experiences()
+
+    print(json.dumps(resume,indent=3))
+    
+       
