@@ -111,7 +111,7 @@ def retrieve_relevant_bullets(skills: List[str], k=10):
     return results["documents"][0]
 
 #make the resume
-def generate_bullets(job_requirements: dict, bullets: List[str]):
+def generate_bullets_and_skills(job_requirements: dict, bullets: List[str]):
     #complete prompt using json job reqs and resume bullets from collection
     prompt = RESUME_GENERATION_PROMPT.format( 
           job_requirements=json.dumps(job_requirements, indent=2),
@@ -124,25 +124,23 @@ def generate_bullets(job_requirements: dict, bullets: List[str]):
           response_format={"type":"json_object"}
     )
 
-    return json.loads(response.choices[0].message.content)
+    answer = json.loads(response.choices[0].message.content)
+    print(answer)
+    return answer['rewritten_bullets'],answer['targeted_skills']
 
 #align the new bullets to the job roles for for final resume
-def match_bullets_to_roles(aligned_bullets, threshold=0.85):
+def match_bullets_to_roles(aligned_bullets):
     matched = []
 
-    for text in aligned_bullets["rewritten_bullets"]: #grab the original bullet that best aligns with new one
-        print(text)
+    for text in aligned_bullets: #grab the original bullet that best aligns with new one
         result = collection.query(
             query_texts=[text],
             n_results=1
         )
 
-        #grab similarity score and info from original match
-        score = result["distances"][0][0]
+        #grab info from original match
         original_id = result["ids"][0][0]
         metadata = result["metadatas"][0][0]
-
-        print(f"Original ID = {original_id}")
 
         #add the metadata back to the bullets
         matched.append({
@@ -171,7 +169,7 @@ def match_bullets_to_roles(aligned_bullets, threshold=0.85):
         roles[title]["experiences"].append(entry['rewritten_text'])
         
     
-    print(json.dumps(roles, indent=2))
+    #print(json.dumps(roles, indent=2))
     return roles
 
 #check for missing keywords and skills
@@ -206,9 +204,9 @@ def load_experiences():
     #check to see if we've done this part
     if os.path.exists("data/aligned_experiences.json"):
         with open("data/aligned_experiences.json", 'r') as f:
-            experience = json.load(f)
+            saved_data = json.load(f)
         print("Previous experiences loaded")
-        return experience
+        return saved_data['experience'],saved_data['targeted_skills']
     else:
         #populate collection with bullets
         print("Loading collection")
@@ -219,20 +217,24 @@ def load_experiences():
             jd_text = f.read()
         job_req = parse_jd(jd_text)
 
+        #list to hold generated experience and skills
         #get old bullets from collection that matches skills from jd
         bullets = retrieve_relevant_bullets(job_req["required_skills"])
 
         #generate bullets for new resume
-        aligned_bullets = generate_bullets(job_req, bullets)
+        aligned_bullets, skills = generate_bullets_and_skills(job_req, bullets)
         
         #create experience section for resume
         experience = match_bullets_to_roles(aligned_bullets)
 
+        save_data = {}
+        save_data['experience'] = experience
+        save_data['targeted_skills'] = skills
         #write to file for later
         with open("data/aligned_experiences.json", 'w') as f:
-             json.dump(experience, f, indent=4)
+             json.dump(save_data, f, indent=4)
 
-        return experience
+        return experience, skills
     
 #main flow
 if __name__ == "__main__":
@@ -261,8 +263,10 @@ if __name__ == "__main__":
     #load things we don't need ai for (on every resume)
     resume = load_static_data()
 
-    #add experiences to resume
-    resume['experience'] = load_experiences()
+    #add experiences and skills to resume
+    experience, skills = (load_experiences())
+    resume['experiences'] = experience
+    resume['skills'] = skills
 
     print(json.dumps(resume,indent=3))
     

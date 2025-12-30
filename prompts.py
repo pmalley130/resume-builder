@@ -20,6 +20,10 @@ Rules:
 - Keep bullets concise and ATS-friendly
 - Order bullets by relevance to the job requirements
 - Return them in JSON format under the object name "rewritten_bullets"
+- Generate 5-15 Skills that match job requirements under the same restraints as above
+- These skills will target ATS keywords that were not covered under the rewritten bullets
+- Do NOT mention specific frameworks or regulations unless explicitly contained in the original bullets
+- Return the skills in JSON format under the object name "targeted_skills"
 
 Job Requirements:
 {job_requirements}
