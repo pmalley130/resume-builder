@@ -125,8 +125,8 @@ def generate_bullets_and_skills(job_requirements: dict, bullets: List[str]):
     )
 
     answer = json.loads(response.choices[0].message.content)
-    print("New Bullets and Skills Generated")
-    return answer['rewritten_bullets'],answer['targeted_skills']
+    print("New Bullets, Skills, and Summary Generated")
+    return answer['rewritten_bullets'], answer['targeted_skills'], answer['professional_summary']
 
 #align the new bullets to the job roles for for final resume
 def match_bullets_to_roles(aligned_bullets):
@@ -172,20 +172,6 @@ def match_bullets_to_roles(aligned_bullets):
     #print(json.dumps(roles, indent=2))
     return roles
 
-#check for missing keywords and skills
-"""
-def critic_pass(generated_resume:str):
-    response = client.chat.completions.create(
-         model="gpt-4.1-mini",
-         messages = [
-            {"role": "system", "content": CRITIC_PROMPT},
-            {"role": "user", "content": generated_resume}
-         ],
-         response_format={"type":"json_object"}
-    )
-
-    return json.loads(response.choices[0].message.content)
-"""
 #load name, portfolio, and education
 def load_static_data(path="data/resume_data.json"):
     
@@ -222,7 +208,7 @@ def load_experiences():
         bullets = retrieve_relevant_bullets(job_req["required_skills"])
 
         #generate bullets for new resume
-        aligned_bullets, skills = generate_bullets_and_skills(job_req, bullets)
+        aligned_bullets, skills, summary = generate_bullets_and_skills(job_req, bullets)
         
         #create experience section for resume
         experience = match_bullets_to_roles(aligned_bullets)
@@ -230,11 +216,12 @@ def load_experiences():
         save_data = {}
         save_data['experience'] = experience
         save_data['targeted_skills'] = skills
+        save_data['professional_summary'] = summary
         #write to file for later
         with open("data/aligned_experiences.json", 'w') as f:
              json.dump(save_data, f, indent=4)
 
-        return experience, skills
+        return experience, skills, summary
     
 #main flow
 if __name__ == "__main__":
@@ -264,9 +251,10 @@ if __name__ == "__main__":
     resume = load_static_data()
 
     #add experiences and skills to resume
-    experience, skills = (load_experiences())
+    experience, skills, summary = (load_experiences())
     resume['experiences'] = experience
     resume['skills'] = skills
+    resume['professional_summary'] = summary
 
     #save new resume to json
     with open("data/new_resume.json", 'w') as f:
