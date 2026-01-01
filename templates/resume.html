@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ resume.name }} – Resume</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 40px;
+            color: #1f2937;
+            background: #ffffff;
+        }
+        h1 {
+            margin-bottom: 0;
+        }
+        h2 {
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 4px;
+            margin-top: 32px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .portfolio a {
+            margin-right: 12px;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: 500;
+        }
+        .experience {
+            margin-bottom: 24px;
+        }
+        .experience-title {
+            font-weight: 600;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .skill {
+            background: #f3f4f6;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        .certifications-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        .certifications-table td {
+            padding: 6px 0;
+            vertical-align: top;
+        }
+
+        .cert-org {
+            font-weight: 600;
+            text-align: left;
+            width: 35%;
+        }
+
+        .cert-list {
+            text-align: right;
+            width: 65%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>{{ resume.name }}</h1>
+        <div>{{ resume.location }}</div>
+    </div>
+    <div class="portfolio">
+        {% for item in resume.portfolio %}
+            <a href="{{ item.link }}">{{ item.link_name }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+<h2>Experience</h2>
+
+{% for key, role in resume.experiences.items() %}
+<div class="experience">
+    <div class="experience-title">
+        {{ role.title }} — {{ role.company }}
+    </div>
+    <div><em>{{ role.dates }}</em></div>
+    <ul>
+        {% for bullet in role.experiences %}
+        <li>{{ bullet }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endfor %}
+
+<h2>Education</h2>
+<ul>
+{% for edu in resume.education %}
+    <li>
+        <strong>{{ edu.degree }}</strong>,
+        {{ edu.program }} —
+        {{ edu.school }}
+        ({{ edu.graduation_date or edu.expected_grad_date }})
+    </li>
+{% endfor %}
+</ul>
+
+<h2>Certifications</h2>
+<table class="certifications-table">
+    {% for org in resume.certifications %}
+    <tr>
+        <td class="cert-org">{{ org.organization }}</td>
+        <td class="cert-list">
+            {{ org.certs | join(", ") }}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h2>Skills</h2>
+<div class="skills">
+{% for skill in resume.skills %}
+    <span class="skill">{{ skill }}</span>
+{% endfor %}
+</div>
+
+</body>
+</html>

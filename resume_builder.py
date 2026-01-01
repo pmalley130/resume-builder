@@ -172,6 +172,20 @@ def match_bullets_to_roles(aligned_bullets):
     #print(json.dumps(roles, indent=2))
     return roles
 
+#check for missing keywords and skills
+"""
+def critic_pass(generated_resume:str):
+    response = client.chat.completions.create(
+         model="gpt-4.1-mini",
+         messages = [
+            {"role": "system", "content": CRITIC_PROMPT},
+            {"role": "user", "content": generated_resume}
+         ],
+         response_format={"type":"json_object"}
+    )
+
+    return json.loads(response.choices[0].message.content)
+"""
 #load name, portfolio, and education
 def load_static_data(path="data/resume_data.json"):
     
@@ -183,6 +197,7 @@ def load_static_data(path="data/resume_data.json"):
     candidate['location'] = data['candidate']['base_location']
     candidate['education'] = data['candidate']['education']
     candidate['portfolio'] = data['candidate']['portfolio_links']
+    candidate['certifications'] = data['candidate']['certifications']
 
     return candidate
 
@@ -216,7 +231,6 @@ def load_experiences():
         save_data = {}
         save_data['experience'] = experience
         save_data['targeted_skills'] = skills
-        save_data['professional_summary'] = summary
         #write to file for later
         with open("data/aligned_experiences.json", 'w') as f:
              json.dump(save_data, f, indent=4)
