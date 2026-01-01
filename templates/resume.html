@@ -19,15 +19,30 @@
             margin-top: 32px;
         }
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            text-align: center;
+            margin-bottom: 16px;
         }
-        .portfolio a {
-            margin-right: 12px;
+        .header-subline {
+            margin-top: 6px;
+            font-size: 0.95em;
+            color: #374151;
+        }
+        .header-subline a {
             text-decoration: none;
             color: #2563eb;
-            font-weight: 500;
+        }
+        .header-subline a:hover {
+            text-decoration: underline;
+        }
+        .location {
+            margin-right: 12px;
+        }
+        .summary {
+            margin-top: 16px;
+            margin-bottom: 24px;
+            font-size: 1.05em;
+            line-height: 1.5;
+            color: #374151;
         }
         .experience {
             margin-bottom: 24px;
@@ -38,16 +53,9 @@
         ul {
             padding-left: 20px;
         }
-        .skills {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .skill {
-            background: #f3f4f6;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.9em;
+        .skills-list {
+            margin-top: 8px;
+            line-height: 1.5;
         }
         .certifications-table {
             width: 100%;
@@ -75,15 +83,29 @@
 <body>
 
 <div class="header">
-    <div>
-        <h1>{{ resume.name }}</h1>
-        <div>{{ resume.location }}</div>
+    <h1>{{ resume.name }}</h1>
+
+    <div class="header-subline">
+        {% if resume.portfolio %}
+        <span class="portfolio-links">
+            {% for item in resume.portfolio %}
+                {% set link = item.link %}
+                {% if "@" in link %}
+                    <a href="mailto:{{ link }}">{{ link }}</a>
+                {% elif link.startswith("http://") or link.startswith("https://") %}
+                    <a href="{{ link }}">{{ link }}</a>
+                {% else %}
+                    <a href="https://{{ link }}">{{ link }}</a>
+                {% endif %}
+                {% if not loop.last %} | {% endif %}
+    {% endfor %}
+        </span>
+        {% endif %}
     </div>
-    <div class="portfolio">
-        {% for item in resume.portfolio %}
-            <a href="{{ item.link }}">{{ item.link_name }}</a>
-        {% endfor %}
-    </div>
+</div>
+
+<div class="summary">
+    {{ resume.professional_summary }}
 </div>
 
 <h2>Experience</h2>
@@ -109,7 +131,13 @@
         <strong>{{ edu.degree }}</strong>,
         {{ edu.program }} —
         {{ edu.school }}
-        ({{ edu.graduation_date or edu.expected_grad_date }})
+        (
+        {% if edu.graduation_date %}
+            {{ edu.graduation_date }}
+        {% elif edu.expected_grad_date %}
+            Planned {{ edu.expected_grad_date }}
+        {% endif %}
+        )
     </li>
 {% endfor %}
 </ul>
@@ -127,10 +155,11 @@
 </table>
 
 <h2>Skills</h2>
-<div class="skills">
-{% for skill in resume.skills %}
-    <span class="skill">{{ skill }}</span>
-{% endfor %}
+{% if resume.skills %}
+<div class="skills-list">
+    {{ resume.skills | sort | join(", ") }}
+</div>
+{% endif %}
 </div>
 
 </body>

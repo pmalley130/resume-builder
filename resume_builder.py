@@ -12,8 +12,7 @@ import traceback
 
 from prompts import ( #import prompts from separate file
     JD_EXTRACTION_PROMPT,
-    RESUME_GENERATION_PROMPT,
-    CRITIC_PROMPT
+    RESUME_GENERATION_PROMPT
 )
 
 def embed_texts(texts: list[str]) -> list[list[float]]:
@@ -172,20 +171,6 @@ def match_bullets_to_roles(aligned_bullets):
     #print(json.dumps(roles, indent=2))
     return roles
 
-#check for missing keywords and skills
-"""
-def critic_pass(generated_resume:str):
-    response = client.chat.completions.create(
-         model="gpt-4.1-mini",
-         messages = [
-            {"role": "system", "content": CRITIC_PROMPT},
-            {"role": "user", "content": generated_resume}
-         ],
-         response_format={"type":"json_object"}
-    )
-
-    return json.loads(response.choices[0].message.content)
-"""
 #load name, portfolio, and education
 def load_static_data(path="data/resume_data.json"):
     
@@ -222,15 +207,17 @@ def load_experiences():
         #get old bullets from collection that matches skills from jd
         bullets = retrieve_relevant_bullets(job_req["required_skills"])
 
-        #generate bullets for new resume
+        #generate bullets, skills, and summary for new resume
         aligned_bullets, skills, summary = generate_bullets_and_skills(job_req, bullets)
         
         #create experience section for resume
         experience = match_bullets_to_roles(aligned_bullets)
 
         save_data = {}
+        save_data['professional_summary'] = summary
         save_data['experience'] = experience
         save_data['targeted_skills'] = skills
+        
         #write to file for later
         with open("data/aligned_experiences.json", 'w') as f:
              json.dump(save_data, f, indent=4)
