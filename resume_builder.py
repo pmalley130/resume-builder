@@ -224,6 +224,67 @@ def load_experiences():
 
         return experience, skills, summary
     
+#index bullets to roles for padding
+def index_resume_data(path="data/resume_data.json"):
+    role_index = {}
+    seen = {}
+
+    with open(path,encoding='utf8') as f:
+        data = json.load(f)
+
+    print("Indexing Role Data")
+    #create one role slot per role in data
+    for role in data.get("candidate", {}).get("roles",[]):
+        title = role.get("title")
+        role_index[title] = []
+        seen[title] = set()
+
+    #add bullets by walking through, checking for dupes, and assigning them to matching role
+    for resume in data.get("resumes"):
+        for bullet in resume.get("bullets"):
+            title = bullet.get("title")
+            text = bullet.get("text")
+
+            if text in seen[title]:
+                continue
+
+            role_index[title].append(text)
+            seen[title].add(text)
+
+    return role_index
+
+#ensure that generated resume shows more than one role and enough bullets
+def pad_roles(
+          experience, role_index, min_roles=2, min_bullets=4
+):
+    #if we don't have enough roles, walk through role index and add them if they're not already represented until we have enough
+    if len(experience) < min_roles:
+        for role_title in role_index:
+            if role_title not in experience:
+                experience[role_title] = {
+                    "company": "",
+                    "title": role_title,
+                    "dates": "",
+                    "experiences": []
+                }
+            if len(experience) >= min_roles:
+                break
+
+    #now add bullets for each role until we have enough
+    for role_title, role_block in experience.items():
+        role_block.setdefault("experiences",[])
+
+        bullets = role_block["experiences"]
+        existing = set(bullets)
+
+        for filler in role_index.get(role_title, []):
+            if len(bullets) >= min_bullets:
+                break
+            if filler not in existing:
+                 bullets.append(filler)
+                 existing.add(filler)
+    return experience
+
 #main flow
 if __name__ == "__main__":
     load_dotenv() #load API key
@@ -248,11 +309,20 @@ if __name__ == "__main__":
     )
     resume = {}
 
+
     #load things we don't need ai for (on every resume)
     resume = load_static_data()
 
-    #add experiences and skills to resume
+    #index role data
+    role_index = index_resume_data()
+
+    #have AI generate experience, skills, and summary
     experience, skills, summary = (load_experiences())
+    
+    #pad roles and bullets
+    experience = pad_roles(experience, role_index)
+
+    #add experiences and skills to resume
     resume['experiences'] = experience
     resume['skills'] = skills
     resume['professional_summary'] = summary
