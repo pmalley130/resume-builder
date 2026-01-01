@@ -179,6 +179,7 @@ data/resume_data.json
 data/job_description.txt
 data/aligned_experiences.json
 data/new_resume.json
+output/resume.html
 
 # playground for method testing
 playground.py
