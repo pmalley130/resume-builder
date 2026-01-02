@@ -192,12 +192,12 @@ def load_experiences():
         with open("data/aligned_experiences.json", 'r') as f:
             saved_data = json.load(f)
         print("Previous experiences loaded")
-        return saved_data['experience'],saved_data['targeted_skills']
+        return saved_data['experience'],saved_data['targeted_skills'],saved_data['professional_summary']
     else:
         #populate collection with bullets
         print("Loading collection")
         load_collection(collection)
-        print("collection loaded")
+        print("Collection loaded")
         #open job description and parse into relevant json based on prompt
         with open("data/job_description.txt") as f:
             jd_text = f.read()
@@ -224,6 +224,95 @@ def load_experiences():
 
         return experience, skills, summary
     
+#index bullets to roles for padding
+def index_resume_data(path="data/resume_data.json"):
+    role_index = {}
+    seen = {}
+
+    with open(path,encoding='utf8') as f:
+        data = json.load(f)
+
+    print("Indexing Role Data")
+    #create one role slot per role in data
+    for role in data.get("candidate", {}).get("roles",[]):
+        title = role.get("title")
+        role_index[title] = []
+        seen[title] = set()
+
+    #add bullets by walking through, checking for dupes, and assigning them to matching role
+    for resume in data.get("resumes"):
+        for bullet in resume.get("bullets"):
+            title = bullet.get("title")
+            text = bullet.get("text")
+            skills = bullet.get("skills") or []
+
+            if text in seen[title]:
+                continue
+
+            role_index[title].append({
+                 "text": text,
+                 "skills": [s for s in skills]
+            })
+            seen[title].add(text)
+
+    return role_index
+
+#ensure that generated resume shows more than one role and enough bullets
+def pad_roles(
+          experience, role_index, min_roles=3, min_bullets=4, path="data/resume_data.json"
+):
+    #read original data to backfill info
+    with open(path,encoding='utf8') as f:
+        resume_data = json.load(f)
+    
+    #sort reverse chron so we always get the latest jobs
+    roles_sorted = sorted(
+         resume_data["candidate"]["roles"],
+         key= lambda r: r.get ("start", ""),
+         reverse=True
+    )
+    #if we don't have enough roles, walk through role index and add them if they're not already represented until we have enough
+    if len(experience) < min_roles:
+        for role in roles_sorted:
+            title = role["title"]
+            if title not in experience:
+                 experience[title] = {
+                      "company": role.get("company"),
+                      "title": title,
+                      "dates": role.get("dates"),
+                      "experiences": []
+                 }
+            if len(experience) >= min_roles:
+                break
+
+    #now add bullets for each role until we have enough, skipping ones with overlapping skills
+    for role_title, role_block in experience.items():
+        role_block.setdefault("experiences",[])
+
+        bullets = role_block["experiences"]
+        used_text= set(bullets)
+        used_skills = set()
+
+        #add fillers matching the role, skipping previously used fillers and overlapped skills
+        for candidate in role_index.get(role_title, []):
+            if len(bullets) >= min_bullets:
+                break
+
+            text = candidate["text"]
+            skills = set(candidate.get("skills", []))
+
+            if text in used_text:
+                continue
+
+            if skills and (skills & used_skills):
+                continue
+
+            bullets.append(text)
+            used_text.add(text)
+            used_skills |= skills
+
+    return experience
+
 #main flow
 if __name__ == "__main__":
     load_dotenv() #load API key
@@ -248,11 +337,20 @@ if __name__ == "__main__":
     )
     resume = {}
 
+
     #load things we don't need ai for (on every resume)
     resume = load_static_data()
 
-    #add experiences and skills to resume
+    #index role data
+    role_index = index_resume_data()
+
+    #have AI generate experience, skills, and summary
     experience, skills, summary = (load_experiences())
+    
+    #pad roles and bullets
+    experience = pad_roles(experience, role_index)
+
+    #add experiences and skills to resume
     resume['experiences'] = experience
     resume['skills'] = skills
     resume['professional_summary'] = summary
