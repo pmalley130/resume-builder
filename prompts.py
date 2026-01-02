@@ -6,7 +6,6 @@ Return valid JSON with:
 - preferred_skills
 - responsibilities
 - ats_keywords
-- seniority
 """
 
 RESUME_GENERATION_PROMPT = """
