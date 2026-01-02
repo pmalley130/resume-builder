@@ -1,6 +1,6 @@
 {
   "candidate": {
-    "name": "Jordan Taylor",
+    "name": "John Doe",
     "base_location": "Mid-Atlantic, USA",
     "primary_domains": [
       "Network Security",
@@ -69,7 +69,7 @@
     "portfolio_links": [
       {
         "link_name": "Email",
-        "link": "jordan.taylor@example.com"
+        "link": "john.doe@example.com"
       },
       {
         "link_name": "GitHub",
