@@ -192,12 +192,12 @@ def load_experiences():
         with open("data/aligned_experiences.json", 'r') as f:
             saved_data = json.load(f)
         print("Previous experiences loaded")
-        return saved_data['experience'],saved_data['targeted_skills']
+        return saved_data['experience'],saved_data['targeted_skills'],saved_data['professional_summary']
     else:
         #populate collection with bullets
         print("Loading collection")
         load_collection(collection)
-        print("collection loaded")
+        print("Collection loaded")
         #open job description and parse into relevant json based on prompt
         with open("data/job_description.txt") as f:
             jd_text = f.read()
@@ -244,45 +244,73 @@ def index_resume_data(path="data/resume_data.json"):
         for bullet in resume.get("bullets"):
             title = bullet.get("title")
             text = bullet.get("text")
+            skills = bullet.get("skills") or []
 
             if text in seen[title]:
                 continue
 
-            role_index[title].append(text)
+            role_index[title].append({
+                 "text": text,
+                 "skills": [s for s in skills]
+            })
             seen[title].add(text)
 
     return role_index
 
 #ensure that generated resume shows more than one role and enough bullets
 def pad_roles(
-          experience, role_index, min_roles=2, min_bullets=4
+          experience, role_index, min_roles=3, min_bullets=4, path="data/resume_data.json"
 ):
+    #read original data to backfill info
+    with open(path,encoding='utf8') as f:
+        resume_data = json.load(f)
+    
+    #sort reverse chron so we always get the latest jobs
+    roles_sorted = sorted(
+         resume_data["candidate"]["roles"],
+         key= lambda r: r.get ("start", ""),
+         reverse=True
+    )
     #if we don't have enough roles, walk through role index and add them if they're not already represented until we have enough
     if len(experience) < min_roles:
-        for role_title in role_index:
-            if role_title not in experience:
-                experience[role_title] = {
-                    "company": "",
-                    "title": role_title,
-                    "dates": "",
-                    "experiences": []
-                }
+        for role in roles_sorted:
+            title = role["title"]
+            if title not in experience:
+                 experience[title] = {
+                      "company": role.get("company"),
+                      "title": title,
+                      "dates": role.get("dates"),
+                      "experiences": []
+                 }
             if len(experience) >= min_roles:
                 break
 
-    #now add bullets for each role until we have enough
+    #now add bullets for each role until we have enough, skipping ones with overlapping skills
     for role_title, role_block in experience.items():
         role_block.setdefault("experiences",[])
 
         bullets = role_block["experiences"]
-        existing = set(bullets)
+        used_text= set(bullets)
+        used_skills = set()
 
-        for filler in role_index.get(role_title, []):
+        #add fillers matching the role, skipping previously used fillers and overlapped skills
+        for candidate in role_index.get(role_title, []):
             if len(bullets) >= min_bullets:
                 break
-            if filler not in existing:
-                 bullets.append(filler)
-                 existing.add(filler)
+
+            text = candidate["text"]
+            skills = set(candidate.get("skills", []))
+
+            if text in used_text:
+                continue
+
+            if skills and (skills & used_skills):
+                continue
+
+            bullets.append(text)
+            used_text.add(text)
+            used_skills |= skills
+
     return experience
 
 #main flow
