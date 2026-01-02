@@ -1,6 +1,17 @@
-Use an LLM to parse bullet points from personal resumes, parse job descriptions, then create a resume from that data.
+This is a simple python and OpenAI-powered resume builder. It ingests candidate data and a job description to generate an ATS-aligned resume (including experience, skills, and a professional summary).
 
-Current status: Successfully creates new bullet points aligning with job description and ties them to roles
-To-do:
-* make the html rendering look more like a regular resume
-* find a way to make sure bullets are used/assigned to at least the last two roles
+To use, run resume_builder.py to save a JSON version of your new resume to data/new_resume.json. Run render_resume.py to generate an HTML resume from that JSON to output/resume.html
+
+Requirements:
+* OpenAI AI Key
+* Job description text file saved to data/job_description.txt
+* JSON describing the candidate saved to data/resume_data.json (see sample file for schema)
+
+To-do/Wishlist:
+* Have OpenAI parse a description from a web page/URL instead of a txt file
+* Better data formatting so refactoring makes more sense (lots of copy and paste has to be done in the resume_data.json file)
+* On that note, workflow to parse resumes into resume_data in the first place
+* PDF render
+* Interactive script
+
+For more information, see my blog

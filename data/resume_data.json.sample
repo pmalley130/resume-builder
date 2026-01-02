@@ -1,0 +1,201 @@
+{
+  "candidate": {
+    "name": "Jordan Taylor",
+    "base_location": "Mid-Atlantic, USA",
+    "primary_domains": [
+      "Network Security",
+      "Cloud Security",
+      "Security Engineering",
+      "Security Operations"
+    ],
+    "roles": [
+      {
+        "company": "Public Sector Agency (Anonymized)",
+        "title": "Security Engineer",
+        "dates": "Sep 2021 - Dec 2025",
+        "start": "2021-09",
+        "end": "2025-12"
+      },
+      {
+        "company": "Mid-Size Professional Services Firm (Anonymized)",
+        "title": "Systems Administrator",
+        "dates": "Feb 2018 - Aug 2021",
+        "start": "2018-02",
+        "end": "2021-08"
+      },
+      {
+        "company": "Nonprofit Organization (Anonymized)",
+        "title": "IT Support Intern",
+        "dates": "Jun 2017 - Aug 2017",
+        "start": "2017-06",
+        "end": "2017-08"
+      }
+    ],
+    "education": [
+      {
+        "school": "Online University (Anonymized)",
+        "degree": "Bachelor of Science",
+        "program": "Cloud Computing",
+        "graduation_date": "2024"
+      },
+      {
+        "school": "Online University (Anonymized)",
+        "degree": "Master of Science",
+        "program": "Cybersecurity and Information Assurance",
+        "expected_grad_date": "2026"
+      }
+    ],
+    "certifications": [
+      {
+        "organization": "Security Certification Body (Anonymized)",
+        "certs": [
+          "CISSP"
+        ]
+      },
+      {
+        "organization": "Cloud Provider (Anonymized)",
+        "certs": [
+          "Solutions Architect Associate"
+        ]
+      },
+      {
+        "organization": "Industry Cert Provider (Anonymized)",
+        "certs": [
+          "Security+",
+          "Network+"
+        ]
+      }
+    ],
+    "portfolio_links": [
+      {
+        "link_name": "Email",
+        "link": "jordan.taylor@example.com"
+      },
+      {
+        "link_name": "GitHub",
+        "link": "github.com/example-handle"
+      },
+      {
+        "link_name": "Website",
+        "link": "example.com/portfolio"
+      }
+    ]
+  },
+  "resumes": [
+    {
+      "resume_id": "security_standard_sample",
+      "focus": "Security Engineering and Operations",
+      "summary": "Security engineer with hands-on experience across network/cloud security, incident response, automation, and standards-aligned security operations in hybrid environments.",
+      "bullets": [
+        {
+          "id": "agency-sec-1",
+          "company": "Public Sector Agency (Anonymized)",
+          "title": "Security Engineer",
+          "text": "Led firewall policy management, IDS/IPS tuning, and network segmentation across hybrid environments, aligning implementations to common security controls and Zero Trust principles.",
+          "confidence": "high",
+          "skills": [
+            "security engineering",
+            "firewalls",
+            "IDS/IPS",
+            "segmentation",
+            "Zero Trust",
+            "controls"
+          ]
+        },
+        {
+          "id": "agency-sec-2",
+          "company": "Public Sector Agency (Anonymized)",
+          "title": "Security Engineer",
+          "text": "Partnered with a SOC during major incident response efforts, coordinating triage, forensics, and containment actions across on-prem and cloud workloads.",
+          "skills": [
+            "SOC",
+            "incident response",
+            "triage",
+            "forensics"
+          ]
+        },
+        {
+          "id": "agency-sec-3",
+          "company": "Public Sector Agency (Anonymized)",
+          "title": "Security Engineer",
+          "text": "Built automation (PowerShell/Python/Terraform) to standardize firewall rules and infrastructure changes, reducing manual work and improving consistency across environments.",
+          "confidence": "high",
+          "skills": [
+            "automation",
+            "PowerShell",
+            "python",
+            "terraform",
+            "IaC"
+          ]
+        },
+        {
+          "id": "firm-sys-1",
+          "company": "Mid-Size Professional Services Firm (Anonymized)",
+          "title": "Systems Administrator",
+          "text": "Implemented centralized logging and alerting, ingesting telemetry from core infrastructure and security platforms to improve visibility and response time.",
+          "confidence": "high",
+          "skills": [
+            "logging",
+            "SIEM",
+            "alerting",
+            "incident response"
+          ]
+        },
+        {
+          "id": "firm-sys-2",
+          "company": "Mid-Size Professional Services Firm (Anonymized)",
+          "title": "Systems Administrator",
+          "text": "Automated user/device provisioning workflows and hardened endpoint/server configurations to reduce onboarding time and configuration drift.",
+          "skills": [
+            "automation",
+            "hardening",
+            "endpoint management"
+          ]
+        }
+      ]
+    },
+    {
+      "resume_id": "zero_trust_sample",
+      "focus": "Zero Trust Networking",
+      "summary": "Security-focused engineer experienced in modernizing remote access and network controls using Zero Trust concepts and strong identity enforcement.",
+      "bullets": [
+        {
+          "id": "agency-zt-1",
+          "company": "Public Sector Agency (Anonymized)",
+          "title": "Security Engineer",
+          "text": "Served as a network security lead for Zero Trust initiatives, helping transition remote access from legacy VPN patterns to a ZTNA approach with stronger identity controls.",
+          "confidence": "high",
+          "skills": [
+            "Zero Trust",
+            "ZTNA",
+            "network security",
+            "identity"
+          ]
+        },
+        {
+          "id": "agency-zt-2",
+          "company": "Public Sector Agency (Anonymized)",
+          "title": "Security Engineer",
+          "text": "Contributed to a proof-of-concept for secure cloud egress/ingress inspection using cloud-native controls and centralized logging.",
+          "skills": [
+            "cloud security",
+            "logging",
+            "network security"
+          ]
+        },
+        {
+          "id": "firm-zt-1",
+          "company": "Mid-Size Professional Services Firm (Anonymized)",
+          "title": "Systems Administrator",
+          "text": "Managed next-generation firewall configurations and monitored traffic/logs to support detection engineering and secure access patterns across multiple sites.",
+          "skills": [
+            "NGFW",
+            "firewall policy",
+            "threat detection",
+            "logging"
+          ]
+        }
+      ]
+    }
+  ]
+}
